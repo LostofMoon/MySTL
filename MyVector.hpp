@@ -9,12 +9,27 @@ public:
     using const_reference        = const value_type&;
     using size_type              = size_t;
     
+
+//-------------------------------iterator----------------------------------------
     class iterator {
     private:
-
         value_type* data_; 
 
     public:
+        iterator(){
+            data_ = new value_type;
+            data_ = nullptr;
+        }
+
+        iterator(iterator& x){
+            data_ = new value_type(*(x.data_));
+        }
+
+        iterator(iterator&& x){
+            data_ = x.data_;
+            x.data_ = nullptr;
+        }
+
         value_type& operator*() {
             return *data_;
         }
@@ -34,8 +49,7 @@ public:
         }
         
         iterator operator++(int) {
-            iterator temp;
-            temp.data_ = (*this).data_;
+            iterator temp(*this);
             ++data_;
             return temp;
         }
@@ -60,10 +74,9 @@ public:
         }
         
         friend long long operator-(const iterator& lit, const iterator& rit) {
-            
-
             return lit.data_ - rit.data_;
         }
+
         iterator& operator+=(long long offset) {
             data_ += offset;
             return *this;
@@ -74,79 +87,99 @@ public:
             return *this;
         }
         
-        bool operator==(const iterator& rit) const {
-            return *this->data_ == rit.data_;
+        bool operator==(const iterator& rit) {
+            return data_ == rit.data_;
         }
 
-        bool operator!=(const iterator& rhs) const {
-            return *this->data_ != rit.data_;
+        bool operator!=(const iterator& rhs) {
+            return data_ != rit.data_;
         }
     };
 
-        class const_iterator {
-        private:
-        public:
+//-------------------------------const_iterator----------------------------------------
 
-            const value_type& operator*() const {
-                return *(_palloc->data(_idx));
-            }
+    class const_iterator {
+    private:
+        value_type* const data_; 
 
-            const_iterator& operator++() {
-                if (_palloc->has_value(_idx)) ++_idx;
-                return *this;
-            }
+    public:
+        const_iterator(const_iterator& x){
+            data_ = new value_type(*(x.data_));
+        }
 
-            const_iterator operator++(int) {
-                iterator iter(*this);
-                ++(*this);
-                return iter;
-            }
+        const_iterator(iterator& x){
+            data_ = new value_type(*(x.data_));
+        }
 
-            const_iterator& operator--() {
-                if (_idx) --_idx;
-                else throw sjtu::invalid_iterator();
-                return *this;
-            }
+        iterator(const_iterator&& x){
+            data_ = x.data_;
+            x.data_ = nullptr;
+        }
 
-            const_iterator& operator+=(int offset) {
-                _idx += offset;
-                return *this;
-            }
+        const value_type& operator*() {
+            return *data_;
+        }
 
-            const_iterator& operator-=(int offset) {
-                _idx -= offset;
-                return *this;
-            }
+        const value_type* operator->() {
+            return data_;
+        }
 
-            const_iterator operator--(int) {
-                iterator iter(*this);
-                --(*this);
-                return iter;
-            }
+        const_iterator& operator++() {
+            ++data_;
+            return *this;
+        }
 
-            const_iterator operator+(int offset) {
-                return const_iterator(_palloc, _idx + offset);
-            }
+        const_iterator& operator--() {
+            --data_;
+            return *this;
+        }
+        
+        const_iterator operator++(int) {
+            const_iterator temp(*this);
+            ++data_;
+            return temp;
+        }
 
-            const_iterator operator-(int offset) {
-                return const_iterator(_palloc, _idx - offset);
-            }
+        const_iterator operator--(int) {
+            const_iterator temp(*this);
+            --data_;
+            return temp;
+        }
 
-            friend long long operator-(const const_iterator& lhs, const const_iterator& rhs) {
-                if (lhs._palloc != rhs._palloc) throw sjtu::invalid_iterator();
-                return (long long)lhs._idx - rhs._idx;
-            }
+        const_iterator operator+(long long offset) {
+            const_iterator temp;
+            temp.data_ = (*this).data_ + offset;
+            return temp;
+        }
+        
+        const_iterator operator-(long long offset) {
+            const_iterator temp;
+            temp.data_ = (*this).data_ - offset;
+            return temp;
+        }
 
-            bool operator==(const const_iterator& rhs) const {
-                if (_palloc != rhs._palloc) throw sjtu::invalid_iterator();
-                return _palloc == rhs._palloc && _idx == rhs._idx;
-            }
+        friend long long operator-(const_iterator& lit, const_iterator& rit) {
+            return lit.data_ - rit.data_;
+        }
 
-            bool operator!=(const const_iterator& rhs) const {
-                if (_palloc != rhs._palloc) throw sjtu::invalid_iterator();
-                return !(*this == rhs);
-            }
-        };
+        const_iterator& operator+=(long long offset) {
+            data_ += offset;
+            return *this;
+        }
+
+        const_iterator& operator-=(long long offset) {
+            data_ -= offset;
+            return *this;
+        }
+
+        bool operator==(const_iterator& rit) {
+            return data_ == rit.data_;
+        }
+
+        bool operator!=(const_iterator& rhs) {
+            return data_ != rit.data_;
+        }
+    };
 
 private:
     value_type* data_;
