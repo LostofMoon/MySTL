@@ -5,9 +5,6 @@ class vector {
 public:
     // types
     using value_type             = T;
-    using allocator_type         = Allocator;
-    using pointer                = typename allocator_traits<Allocator>::pointer;
-    using const_pointer          = typename allocator_traits<Allocator>::const_pointer;
     using reference              = value_type&;
     using const_reference        = const value_type&;
     using size_type              = size_t;
