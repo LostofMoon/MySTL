@@ -12,48 +12,52 @@ public:
     class iterator {};
     class const_iterator{};
  
-    value_type* p;
-    size_t size;
+private:
+    value_type* data_;
+    size_t size_;
 
+
+public:
     // construct/copy/destroy
     vector(){
-        size = 10;
-        p = new value_type [size];
+        size_ = 10;
+        data_ = new value_type [size_];
     }
     vector(const vector& x){
-        size =x.size;
-        p = new value_type [size];
-        for(int i = 0; i != size; i++)
-            *(p+i) = *(x.p + i);
+        size_ =x.size_;
+        data_ = new value_type [size_];
+        for(int i = 0; i != size_; i++)
+            *(data_+i) = *(x.data_ + i);
  
     }
     vector(vector&& x) noexcept{
-        size =x.size;
-        p = x.p;
-        x.p = nullptr;
+        size_ =x.size_;
+        data_ = x.data_;
+        x.data_ = nullptr;
     }
 
     ~vector(){
-        delete []p;
+        delete []data_;
     }
 
-    vector& operator=(const vector& x){=
-        size =x.size;
-        p = new value_type [size];
-        for(int i = 0; i != size; i++)
-            *(p+i) = *(x.p + i);
+    vector& operator=(const vector& x){
+        size_ =x.size_;
+        data_ = new value_type [size_];
+        for(int i = 0; i != size_; i++)
+            *(data_+i) = *(x.data_ + i);
     }
 
     vector& operator=(vector&& x) noexcept(){
-        size =x.size;
-        p = x.p;
-        x.p = nullptr;
+        size_ =x.size_;
+        data_ = x.data_;
+        x.data_ = nullptr;
     }
 
-    void assign(size_type n, const T& u):size(n){
-        p = new value_type [size];
-        for(int i = 0; i != size; i++)
-            *(p+i) = u;
+    void assign(size__type n, const T& u){
+        size = n;
+        data_ = new value_type [size_];
+        for(int i = 0; i != size_; i++)
+            *(data_+i) = u;
     }
  
     // iterators
