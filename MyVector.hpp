@@ -1,3 +1,5 @@
+#include<iostream>
+
 namespace zys {
 
 template<class T>
@@ -7,8 +9,15 @@ public:
     using value_type = T;
     using size_type = unsigned long long;
 
+    //statement
+    class const_iterator;
+
 //-------------------------------iterator----------------------------------------
     class iterator {
+    
+    //friend statement
+    friend vector::const_iterator;
+
     private:
         value_type* data_; 
 
@@ -19,20 +28,16 @@ public:
         }
 
         iterator(value_type* x){
-            data_ = new value_type (*x);
+            data_ = x;
         }
 
         iterator(iterator& x){
-            data_ = new value_type(*(x.data_));
+            data_ = x.data_;
         }
 
         iterator(iterator&& x){
             data_ = x.data_;
             x.data_ = nullptr;
-        }
-
-        ~iterator(){
-            delete data_;
         }
 
     //operator
@@ -109,10 +114,7 @@ public:
 
     public:
     //build and destory
-        const_iterator(value_type* x):data_(x){
-        }
-
-        const_iterator(iterator& x):data_(x.data_){
+        const_iterator(value_type const * x):data_(x){
         }
 
         const_iterator(iterator const & x):data_(x.data_){
@@ -123,10 +125,6 @@ public:
 
         const_iterator(const_iterator&& x):data_(x.data_){
             x.data_ = nullptr;
-        }
-
-        ~const_iterator(){
-            delete data_;
         }
 
     //operator
@@ -161,18 +159,16 @@ public:
         }
 
         const_iterator operator+(long long offset) {
-            const_iterator temp;
-            temp.data_ = (*this).data_ + offset;
+            const_iterator temp = {(*this).data_ + offset};
             return temp;
         }
         
         const_iterator operator-(long long offset) {
-            const_iterator temp;
-            temp.data_ = (*this).data_ - offset;
+            const_iterator temp = {(*this).data_ - offset};
             return temp;
         }
 
-        friend long long operator-(const_iterator& lit, const_iterator& rit) {
+        friend long long operator-(const_iterator const & lit, const_iterator const & rit) {
             return lit.data_ - rit.data_;
         }
 
@@ -186,11 +182,11 @@ public:
             return *this;
         }
 
-        bool operator==(const_iterator& rit) {
+        bool operator==(const const_iterator& rit) {
             return data_ == rit.data_;
         }
 
-        bool operator!=(const_iterator& rit) {
+        bool operator!=(const const_iterator& rit) {
             return data_ != rit.data_;
         }
     };
@@ -244,6 +240,7 @@ public:
         data_ = new value_type [maxsize_];
         for(int i = 0; i != currentsize_; i++)
             *(data_+i) = *(x.data_ + i);
+        return *this;
     }
 
     vector& operator=(vector&& x) noexcept {
@@ -252,6 +249,7 @@ public:
         maxsize_ = x.maxsize_;
         data_ = x.data_;
         x.data_ = nullptr;
+        return *this;
     }
 
     void assign(size_type n, const T& u){
@@ -270,7 +268,7 @@ public:
     }
 
     iterator end() noexcept {
-        iterator temp(data_+currentsize_-1);
+        iterator temp(data_ + currentsize_);
         return temp;
     }
 
@@ -280,7 +278,7 @@ public:
     }
 
     const iterator end() const noexcept {
-        const iterator temp(data_+currentsize_-1);
+        const iterator temp(data_ + currentsize_);
         return temp;
     }
 
@@ -289,7 +287,7 @@ public:
         return temp;
     }
     const_iterator cend() const noexcept {
-        const_iterator temp(data_+currentsize_-1);
+        const_iterator temp(data_ + currentsize_);
         return temp;
     }
 
@@ -378,78 +376,70 @@ public:
     // modifiers
     void push_back(const T& x) {
         if(currentsize_ == maxsize_)DoubleSize();
-        currentsize_ += 1;
         *(data_ + currentsize_) = x;
+        currentsize_ += 1;
     }
     void push_back(T&& x) {
         if(currentsize_ == maxsize_)DoubleSize();
-        currentsize_ += 1;
         *(data_ + currentsize_) = x;
+        currentsize_ += 1;
     }
     void pop_back(){
         if(currentsize_ == 0)return;
         currentsize_ -= 1;
     }
- 
-    iterator insert(const_iterator position, const T& x) {
-        if(currentsize_ == maxsize_)DoubleSize();
-        value_type* temp = new value_type[maxsize_];
-        for(int i = 0; i != position; i++)
-            *(temp + i) = *(data_ + i);
-        *(temp + position) = x;
-        for(int i = position; i != currentsize_; i++)
-            *(temp + i + 1) = *(data_ + i);
-        delete [] data_;
-        data_ = temp;
-        currentsize_ += 1;
-    }
-    iterator insert(const_iterator position, T&& x) {
-        if(currentsize_ == maxsize_)DoubleSize();
-        value_type* temp = new value_type[maxsize_];
-        for(int i = 0; i != position; i++)
-            *(temp + i) = *(data_ + i);
-        *(temp + position) = x;
-        for(int i = position; i != currentsize_; i++)
-            *(temp + i + 1) = *(data_ + i);
-        delete [] data_;
-        data_ = temp;
-        currentsize_ += 1;
-    }
 
-    iterator insert(const_iterator position, size_type n, const T& x) {
+    iterator insert(const_iterator position, size_type n, const T& x) {//返回咋办
+        if(n == 0)return iterator(data_ + (position - cbegin()) );
+
+        size_type delta = position - cbegin();
+        
         while(currentsize_ + n > maxsize_)DoubleSize();
+
         value_type* temp = new value_type[maxsize_];
-        for(int i = 0; i != position; i++)
-            *(temp + i) = *(data_ + i);
+
+        const_iterator pos = cbegin() + delta;
+
+        for(const_iterator it = cbegin(); it != pos; ++it)
+            *(temp + (it - cbegin()) ) = *it;
+
         for(int i = 0; i != n; i++)
-            *(temp + position + i) = x;
-        for(int i = position; i != currentsize_; i++)
-            *(temp + i + n) = *(data_ + i);
+            *(temp + (pos - cbegin()) + i) = x;
+
+        for(const_iterator it = pos; it != cend(); ++it)
+            *(temp + (it - cbegin()) + n) = *it;
+
         delete [] data_;
         data_ = temp;
         currentsize_ += n;
+        return iterator(data_ + delta + 1);
     }
 
-    iterator erase(const_iterator position) {
-        value_type* temp = new value_type[maxsize_];
-        for(int i= 0; i != position; i++)
-            *(temp + i) = *(data_ + i);
-        for(int i= position + 1; i != currentsize_; i++)
-            *(temp + i) = *(data_ + i);
-        delete [] data_;
-        data_ = temp;
-        currentsize_ -= 1;
+    iterator insert(const_iterator position, T&& x) {
+        return insert(position, 1, x);
     }
 
     iterator erase(const_iterator first, const_iterator last) {
+        if(first == last) return end();
+
+        bool flag = (last == end());
+        size_type delta = first - cbegin();
+
         value_type* temp = new value_type[maxsize_];
-        for(const_iterator i = cbegin; i != first + 1; i++)
-            *(temp + i - cbegin) = *(data_ + i - cbegin);
-        for(const_iterator i = last + 1; i != cend; i++)
-            *(temp + i - cbegin - (last - first)) = *(data_ + i- - cbegin);
+
+        for(const_iterator it = cbegin(); it != first + 1; it++)
+            *(temp + (it - cbegin()) ) = *it;
+        for(const_iterator it = last + 1; it != cend(); it++)
+            *(temp + (it - cbegin()) - (last - first) ) = *it;
         delete [] data_;
         data_ = temp;
         currentsize_ -= (last - first);
+        if(flag) return end();
+        return iterator(data_ + delta + 1);
+    }
+
+    iterator erase(const_iterator position) {
+        return erase(position - 1, position);
     }
 
     void swap(vector& x) {
