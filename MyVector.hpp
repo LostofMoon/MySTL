@@ -5,7 +5,7 @@ class vector {
 public:
     // types
     using value_type = T;
-    using size_type = size_t;
+    using size_type = unsigned long long;
 
 //-------------------------------iterator----------------------------------------
     class iterator {
@@ -15,12 +15,11 @@ public:
     public:
     //build and destory
         iterator(){
-            data_ = new value_type;
             data_ = nullptr;
         }
 
         iterator(value_type* x){
-            data_ = new value_type(x);
+            data_ = new value_type (*x);
         }
 
         iterator(iterator& x){
@@ -62,7 +61,7 @@ public:
         }
 
         iterator operator--(int) {
-            iterator temp;(*this);
+            iterator temp(*this);
             --data_;
             return temp;
         }
@@ -97,7 +96,7 @@ public:
             return data_ == rit.data_;
         }
 
-        bool operator!=(const iterator& rhs) {
+        bool operator!=(const iterator& rit) {
             return data_ != rit.data_;
         }
     };
@@ -106,30 +105,23 @@ public:
 
     class const_iterator {
     private:
-        value_type* const data_; 
+        value_type const* data_; 
 
     public:
     //build and destory
-        const_iterator(value_type* x){
-            data_ = new value_type const;
-            data_ = x;
-
-        }
-        const_iterator(cosnt value_type* x){
-            data_ = new value_type const;
-            data_ = x;
+        const_iterator(value_type* x):data_(x){
         }
 
-        const_iterator(iterator& x){
-            data_ = new value_type const (*(x.data_));
+        const_iterator(iterator& x):data_(x.data_){
         }
 
-        const_iterator(const_iterator& x){
-            data_ = new value_type(*(x.data_));
+        const_iterator(iterator const & x):data_(x.data_){
         }
 
-        const_iterator(const_iterator&& x){
-            data_ = x.data_;
+        const_iterator(const_iterator& x):data_(x.data_){
+        }
+
+        const_iterator(const_iterator&& x):data_(x.data_){
             x.data_ = nullptr;
         }
 
@@ -198,7 +190,7 @@ public:
             return data_ == rit.data_;
         }
 
-        bool operator!=(const_iterator& rhs) {
+        bool operator!=(const_iterator& rit) {
             return data_ != rit.data_;
         }
     };
@@ -207,11 +199,11 @@ public:
 
 private:
     value_type* data_;
-    size_t currentsize_, maxsize_;
+    size_type currentsize_, maxsize_;
 
     void DoubleSize() {
         value_type* temp = new value_type[maxsize_*2];
-        for(i = 0; i != maxsize; i++)
+        for(int i = 0; i != maxsize_; i++)
             *(temp + i) = *(data_ + i);
         delete [] data_;
         data_ = temp;
@@ -262,7 +254,7 @@ public:
         x.data_ = nullptr;
     }
 
-    void assign(size__type n, const T& u){
+    void assign(size_type n, const T& u){
         clear();
         maxsize_ = n*2;
         currentsize_ = n;
