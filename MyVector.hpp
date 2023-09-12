@@ -9,9 +9,145 @@ public:
     using const_reference        = const value_type&;
     using size_type              = size_t;
     
-    class iterator {};
-    class const_iterator{};
- 
+    class iterator {
+    private:
+
+        value_type* data_; 
+
+    public:
+        value_type& operator*() {
+            return *data_;
+        }
+
+        value_type* operator->() {
+            return data_;
+        }
+
+        iterator& operator++() {
+            ++data_;
+            return *this;
+        }
+
+        iterator& operator--() {
+            --data_;
+            return *this;
+        }
+        
+        iterator operator++(int) {
+            iterator temp;
+            temp.data_ = (*this).data_;
+            ++data_;
+            return temp;
+        }
+
+        iterator operator--(int) {
+            iterator temp;
+            temp.data_ = (*this).data_;
+            --data_;
+            return temp;
+        }
+
+        iterator operator+(long long offset) {
+            iterator temp;
+            temp.data_ = (*this).data_ + offset;
+            return temp;
+        }
+
+        iterator operator-(long long offset) {
+            iterator temp;
+            temp.data_ = (*this).data_ - offset;
+            return temp;
+        }
+        
+        friend long long operator-(const iterator& lit, const iterator& rit) {
+            
+
+            return lit.data_ - rit.data_;
+        }
+        iterator& operator+=(long long offset) {
+            data_ += offset;
+            return *this;
+        }
+
+        iterator& operator-=(long long offset) {
+            data_ -= offset;
+            return *this;
+        }
+        
+        bool operator==(const iterator& rit) const {
+            return *this->data_ == rit.data_;
+        }
+
+        bool operator!=(const iterator& rhs) const {
+            return *this->data_ != rit.data_;
+        }
+    };
+
+        class const_iterator {
+        private:
+        public:
+
+            const value_type& operator*() const {
+                return *(_palloc->data(_idx));
+            }
+
+            const_iterator& operator++() {
+                if (_palloc->has_value(_idx)) ++_idx;
+                return *this;
+            }
+
+            const_iterator operator++(int) {
+                iterator iter(*this);
+                ++(*this);
+                return iter;
+            }
+
+            const_iterator& operator--() {
+                if (_idx) --_idx;
+                else throw sjtu::invalid_iterator();
+                return *this;
+            }
+
+            const_iterator& operator+=(int offset) {
+                _idx += offset;
+                return *this;
+            }
+
+            const_iterator& operator-=(int offset) {
+                _idx -= offset;
+                return *this;
+            }
+
+            const_iterator operator--(int) {
+                iterator iter(*this);
+                --(*this);
+                return iter;
+            }
+
+            const_iterator operator+(int offset) {
+                return const_iterator(_palloc, _idx + offset);
+            }
+
+            const_iterator operator-(int offset) {
+                return const_iterator(_palloc, _idx - offset);
+            }
+
+            friend long long operator-(const const_iterator& lhs, const const_iterator& rhs) {
+                if (lhs._palloc != rhs._palloc) throw sjtu::invalid_iterator();
+                return (long long)lhs._idx - rhs._idx;
+            }
+
+            bool operator==(const const_iterator& rhs) const {
+                if (_palloc != rhs._palloc) throw sjtu::invalid_iterator();
+                return _palloc == rhs._palloc && _idx == rhs._idx;
+            }
+
+            bool operator!=(const const_iterator& rhs) const {
+                if (_palloc != rhs._palloc) throw sjtu::invalid_iterator();
+                return !(*this == rhs);
+            }
+        };
+
 private:
     value_type* data_;
     size_t size_;
@@ -23,13 +159,14 @@ public:
         size_ = 10;
         data_ = new value_type [size_];
     }
+
     vector(const vector& x){
         size_ =x.size_;
         data_ = new value_type [size_];
         for(int i = 0; i != size_; i++)
             *(data_+i) = *(x.data_ + i);
- 
     }
+
     vector(vector&& x) noexcept{
         size_ =x.size_;
         data_ = x.data_;
@@ -41,6 +178,7 @@ public:
     }
 
     vector& operator=(const vector& x){
+        delete []data_;
         size_ =x.size_;
         data_ = new value_type [size_];
         for(int i = 0; i != size_; i++)
@@ -48,12 +186,14 @@ public:
     }
 
     vector& operator=(vector&& x) noexcept(){
+        delete []data_;
         size_ =x.size_;
         data_ = x.data_;
         x.data_ = nullptr;
     }
 
     void assign(size__type n, const T& u){
+        delete []data_;
         size = n;
         data_ = new value_type [size_];
         for(int i = 0; i != size_; i++)
