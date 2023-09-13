@@ -384,8 +384,14 @@ public:
 
     void reverse() {
         list temp;
-
+        node *p = tail->pre;
+        while (p != head){
+            temp.insert(temp.tail, *(p->data));
+            p = p->pre;
+        }
+        *this = temp;
     }
+    
     void unique() {
         if(currentsize < 2) return;
         node *now = head->next, *then = now->next;
