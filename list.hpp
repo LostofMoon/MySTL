@@ -7,14 +7,6 @@
 #include<algorithm>
 namespace sjtu {
 
-// template <class Tp>
-// void swap(Tp& lhs, Tp& rhs) {
-// 	auto tmp(std::move(lhs));
-// 	lhs = std::move(rhs);
-// 	rhs = std::move(tmp);
-// }
-
-
 //声明数据节点和基本节点
 template <class T> struct list_node_base;//基本节点
 template <class T> struct list_node;//数据节点

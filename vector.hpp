@@ -290,7 +290,7 @@ public:
  #pragma region 插入 insert()
     iterator insert(const_iterator pos, size_type n, const value_type& value){
         //if(pos < begin_ || pos > begin_ + currentsize_)throw
-        iterator xpos = const_cast<iterator>(pos);//???????????????????????????????????????????
+        iterator xpos = const_cast<iterator>(pos);//留后门
         size_type index = xpos - begin_;
         if(currentsize_ + n <= maxsize_){
             for(size_type i = size() + n - 1; i != index + n - 1; --i){
@@ -353,8 +353,8 @@ public:
     iterator erase(const_iterator first, const_iterator last){
         //if(!(first >= cbegin() && last <= cend() && first <= last))throw
         if(first == last) return end();
-        iterator xfirst = const_cast<iterator>(first);//???????????????????????????????????????????
-        iterator xlast = const_cast<iterator>(last);//???????????????????????????????????????????
+        iterator xfirst = const_cast<iterator>(first);//留后门
+        iterator xlast = const_cast<iterator>(last);//留后门
         size_type delta = xfirst - cbegin();
         size_type n = last - first;
         for(size_type i = 0; i != size() - n - delta; ++i){
@@ -366,7 +366,7 @@ public:
         currentsize_ -= n;
         if(size() < capacity()/4){
             maxsize_ = currentsize_ * 2;
-            iterator temp_begin_ = static_cast<T*>(operator new(maxsize_ * sizeof(T)));//???????????????????????????????????????
+            iterator temp_begin_ = static_cast<T*>(operator new(maxsize_ * sizeof(T)));
             for(size_type i = 0; i != size(); ++i){
                 new (temp_begin_ + i) value_type(*(begin_ + i));
                 (begin_ + i)->~T();
